@@ -11,6 +11,12 @@ function sendToActiveTab(message) {
 
 function onSearch(pattern, flags) {
   sendToActiveTab({ action: 'search', pattern, flags })
+    .then(state => {
+      if (state) {
+        updateMatchCount(state.currentIndex + 1, state.matchCount);
+        if (state.error) showError(state.error);
+      }
+    })
     .catch(() => showCannotSearch());
 }
 
