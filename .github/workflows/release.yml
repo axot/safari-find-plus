@@ -44,12 +44,20 @@ jobs:
             build \
             -quiet
 
-      - name: Ad-hoc sign app and extension
+      - name: Ad-hoc sign with entitlements
         run: |
           APP_PATH=$(find ./DerivedData -name "RegexFind.app" -type d | head -1)
+          APPEX_PATH="$APP_PATH/Contents/PlugIns/RegexFind Extension.appex"
           echo "Found app at: $APP_PATH"
-          codesign --force --deep --sign - "$APP_PATH"
-          codesign --verify "$APP_PATH" && echo "✅ Ad-hoc signature valid"
+
+          # Sign extension first (inner), then app (outer)
+          codesign --force --sign - --entitlements RegexFindExtension.entitlements "$APPEX_PATH"
+          codesign --force --sign - --entitlements RegexFind.entitlements "$APP_PATH"
+
+          # Verify
+          codesign --verify --deep "$APP_PATH" && echo "✅ Signature valid"
+          codesign -d --entitlements - "$APP_PATH" 2>&1 | head -20
+          codesign -d --entitlements - "$APPEX_PATH" 2>&1 | head -20
 
       - name: Package app
         run: |
