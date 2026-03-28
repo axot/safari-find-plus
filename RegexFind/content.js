@@ -48,6 +48,26 @@ function isNodeExcluded(node) {
     if (style.opacity === '0') return true;
   }
 
+  ancestor = el;
+  while (ancestor && ancestor !== document.documentElement) {
+    const s = getComputedStyle(ancestor);
+    const cp = s.clipPath;
+    if (cp !== 'none' && cp !== '' &&
+        (/circle\(0/i.test(cp) || /inset\((?:100%|50%)/i.test(cp))) {
+      return true;
+    }
+    const cl = s.clip;
+    if (cl !== 'auto' &&
+        /rect\(\s*0[^,]*,\s*0[^,]*,\s*0[^,]*,\s*0/i.test(cl)) {
+      return true;
+    }
+    if ((s.overflow === 'hidden' || s.overflow === 'clip') &&
+        (parseFloat(s.width) === 0 || parseFloat(s.height) === 0)) {
+      return true;
+    }
+    ancestor = ancestor.parentElement;
+  }
+
   return false;
 }
 
