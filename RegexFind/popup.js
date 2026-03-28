@@ -1,6 +1,5 @@
 let debounceTimer = null;
 let caseInsensitive = true; // default: case-insensitive ON
-let currentPattern = '';
 
 function sendToActiveTab(message) {
   return browser.tabs.query({ active: true, currentWindow: true })
@@ -56,27 +55,22 @@ function hideError() {
 }
 
 function validateAndSearch(value) {
+  const input = document.getElementById('regex-input');
+
   if (!value) {
-    currentPattern = '';
-    hideError();
-    const input = document.getElementById('regex-input');
     input.classList.remove('error');
+    hideError();
     onClear();
     return;
   }
 
   const flags = buildFlags();
-
   try {
     new RegExp(value, flags);
-    currentPattern = value;
-    const input = document.getElementById('regex-input');
     input.classList.remove('error');
     hideError();
     onSearch(value, flags);
   } catch (e) {
-    currentPattern = '';
-    const input = document.getElementById('regex-input');
     input.classList.add('error');
     showError(e.message);
   }
@@ -126,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (e.key === 'Escape') {
       input.value = '';
-      currentPattern = '';
       hideError();
       input.classList.remove('error');
       onClear();
@@ -141,13 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  nextBtn.addEventListener('click', () => {
-    onNavigate('next');
-  });
-
-  prevBtn.addEventListener('click', () => {
-    onNavigate('prev');
-  });
+  nextBtn.addEventListener('click', () => onNavigate('next'));
+  prevBtn.addEventListener('click', () => onNavigate('prev'));
 });
 
 browser.runtime.onMessage.addListener((message) => {

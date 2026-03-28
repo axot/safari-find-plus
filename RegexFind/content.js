@@ -17,19 +17,11 @@ let searchState = {
 };
 let matchRanges = [];
 
-function isAncestorExcluded(node) {
+function isNodeExcluded(node) {
   let el = node.parentElement;
   while (el) {
     if (EXCLUDE_TAGS.test(el.tagName)) return true;
     if (el.getAttribute('contenteditable') === 'true') return true;
-    el = el.parentElement;
-  }
-  return false;
-}
-
-function isAncestorHidden(node) {
-  let el = node.parentElement;
-  while (el) {
     if (getComputedStyle(el).display === 'none') return true;
     el = el.parentElement;
   }
@@ -46,12 +38,12 @@ function collectTextNodes(root) {
   while (current) {
     const parent = current.parentElement;
     if (parent) {
-      let dominated = checkedParents.get(parent);
-      if (dominated === undefined) {
-        dominated = isAncestorExcluded(current) || isAncestorHidden(current);
-        checkedParents.set(parent, dominated);
+      let excluded = checkedParents.get(parent);
+      if (excluded === undefined) {
+        excluded = isNodeExcluded(current);
+        checkedParents.set(parent, excluded);
       }
-      if (!dominated && current.textContent.length > 0) {
+      if (!excluded && current.textContent.length > 0) {
         textNodes.push(current);
       }
     }
@@ -116,18 +108,20 @@ function scrollToMatch(index) {
   });
 }
 
+function navigateTo(index) {
+  searchState.currentIndex = index;
+  highlightCurrent(index);
+  scrollToMatch(index);
+}
+
 function selectNext() {
   if (matchRanges.length === 0) return;
-  searchState.currentIndex = (searchState.currentIndex + 1) % matchRanges.length;
-  highlightCurrent(searchState.currentIndex);
-  scrollToMatch(searchState.currentIndex);
+  navigateTo((searchState.currentIndex + 1) % matchRanges.length);
 }
 
 function selectPrev() {
   if (matchRanges.length === 0) return;
-  searchState.currentIndex = (searchState.currentIndex - 1 + matchRanges.length) % matchRanges.length;
-  highlightCurrent(searchState.currentIndex);
-  scrollToMatch(searchState.currentIndex);
+  navigateTo((searchState.currentIndex - 1 + matchRanges.length) % matchRanges.length);
 }
 
 function clearHighlights() {
@@ -172,37 +166,36 @@ function performSearch(pattern, flags) {
   return searchState;
 }
 
+function respondWithState(sendResponse, broadcast = true) {
+  sendResponse({ ...searchState });
+  if (broadcast) {
+    browser.runtime.sendMessage({ action: 'stateUpdate', ...searchState }).catch(() => {});
+  }
+}
+
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (!request || !request.action) return false;
 
   switch (request.action) {
-    case 'search': {
-      const result = performSearch(request.pattern, request.flags);
-      sendResponse(result);
-      browser.runtime.sendMessage({ action: 'stateUpdate', ...searchState }).catch(() => {});
+    case 'search':
+      performSearch(request.pattern, request.flags);
+      respondWithState(sendResponse);
       break;
-    }
-    case 'selectNext': {
+    case 'selectNext':
       selectNext();
-      sendResponse({ ...searchState });
-      browser.runtime.sendMessage({ action: 'stateUpdate', ...searchState }).catch(() => {});
+      respondWithState(sendResponse);
       break;
-    }
-    case 'selectPrev': {
+    case 'selectPrev':
       selectPrev();
-      sendResponse({ ...searchState });
-      browser.runtime.sendMessage({ action: 'stateUpdate', ...searchState }).catch(() => {});
+      respondWithState(sendResponse);
       break;
-    }
-    case 'clear': {
+    case 'clear':
       clearHighlights();
-      sendResponse({ ...searchState });
+      respondWithState(sendResponse, false);
       break;
-    }
-    case 'getState': {
-      sendResponse({ ...searchState });
+    case 'getState':
+      respondWithState(sendResponse, false);
       break;
-    }
     default:
       return false;
   }
