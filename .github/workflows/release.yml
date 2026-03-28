@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Xcode project
+        run: |
+          xcrun safari-web-extension-converter RegexFind/ \
+            --project-location ./build \
+            --app-name "RegexFind" \
+            --bundle-identifier com.local.regexfind \
+            --swift \
+            --macos-only \
+            --force \
+            --no-open \
+            --copy-resources
+
+      - name: Fix bundle identifier case
+        run: |
+          sed -i '' 's/com\.local\.RegexFind/com.local.regexfind/g' \
+            build/RegexFind/RegexFind.xcodeproj/project.pbxproj
+
+      - name: Build app
+        run: |
+          xcodebuild -project build/RegexFind/RegexFind.xcodeproj \
+            -scheme "RegexFind" \
+            -destination "platform=macOS" \
+            -derivedDataPath ./DerivedData \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build \
+            -quiet
+
+      - name: Package app
+        run: |
+          APP_PATH=$(find ./DerivedData -name "RegexFind.app" -type d | head -1)
+          echo "Found app at: $APP_PATH"
+          ditto -c -k --keepParent "$APP_PATH" "RegexFind-macOS-${GITHUB_REF_NAME}.zip"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: RegexFind-macOS-*.zip
+          generate_release_notes: true
+          body: |
+            > ⚠️ **Unsigned build** — In Safari, go to Settings → Developer → enable **Allow unsigned extensions** (resets each Safari restart).
+
+            ## Install
+            1. Download and unzip `RegexFind-macOS-${{ github.ref_name }}.zip`
+            2. Move **RegexFind.app** to `/Applications`
+            3. Open it once to register the extension
+            4. Safari → Settings → Extensions → enable **Regex Find**
