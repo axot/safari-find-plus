@@ -17,20 +17,46 @@ let searchState = {
 };
 let matchRanges = [];
 
+// "Safari-like" visibility: only include text that occupies visible pixels.
+// Layer 1: tag denylist  |  Layer 2: checkVisibility()  |  Layer 3: getClientRects()
 function isNodeExcluded(node) {
-  let el = node.parentElement;
-  while (el) {
-    if (EXCLUDE_TAGS.test(el.tagName)) return true;
-    if (el.getAttribute('contenteditable') === 'true') return true;
+  const el = node.parentElement;
+  if (!el) return true;
+
+  // Layer 1: tag denylist (fast, no style computation)
+  let ancestor = el;
+  while (ancestor) {
+    if (EXCLUDE_TAGS.test(ancestor.tagName)) return true;
+    if (ancestor.getAttribute('contenteditable') === 'true') return true;
+    ancestor = ancestor.parentElement;
+  }
+
+  // Layer 2: native visibility check (walks full ancestor chain)
+  if (el.checkVisibility) {
+    if (!el.checkVisibility({
+      opacityProperty: true,
+      visibilityProperty: true
+    })) return true;
+  } else {
+    // Fallback for older Safari without checkVisibility
     const style = getComputedStyle(el);
     if (style.display === 'none') return true;
     if (style.visibility === 'hidden') return true;
     if (style.opacity === '0') return true;
-    if (style.clipPath === 'circle(0px)' || style.clipPath === 'inset(100%)') return true;
-    if (style.clip === 'rect(0px, 0px, 0px, 0px)') return true;
-    if (style.overflow === 'hidden' &&
-        (parseFloat(style.width) === 0 || parseFloat(style.height) === 0)) return true;
-    el = el.parentElement;
+  }
+
+  return false;
+}
+
+// Layer 3: verify Range has non-zero screen area (catches transform:scale(0), font-size:0, etc.)
+function rangeIsVisible(range) {
+  const rects = range.getClientRects();
+  if (rects.length === 0) return false;
+
+  // Check that at least one rect has non-zero area
+  for (let i = 0; i < rects.length; i++) {
+    const r = rects[i];
+    if (r.width > 0 && r.height > 0) return true;
   }
   return false;
 }
@@ -86,6 +112,9 @@ function findMatches(textNodes, regex, maxResults) {
       const range = document.createRange();
       range.setStart(textNode, match.index);
       range.setEnd(textNode, match.index + match[0].length);
+
+      if (!rangeIsVisible(range)) continue;
+
       ranges.push(range);
 
       if (ranges.length >= maxResults) break;

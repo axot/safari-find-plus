@@ -41,9 +41,19 @@
 </section>
 
 <section>
-  <h2>Hidden Element (should NOT be highlighted)</h2>
-  <div style="display:none">This hidden div contains secret text, number 999, and email hidden@nowhere.com. It should NOT be highlighted because it is not visible.</div>
-  <p>There is a display:none div above this paragraph.</p>
+  <h2>Hidden Elements (should NOT be highlighted)</h2>
+  <div style="display:none">display:none — secret text, number 999, email hidden@nowhere.com</div>
+  <div style="visibility:hidden">visibility:hidden — secret text, number 888, email vis@nowhere.com</div>
+  <div style="opacity:0">opacity:0 — secret text, number 777, email opa@nowhere.com</div>
+  <div style="clip-path:circle(0px)">clip-path:circle(0px) — secret text, number 666, email clip@nowhere.com</div>
+  <div style="clip-path:inset(100%)">clip-path:inset(100%) — secret text, number 555</div>
+  <div style="clip:rect(0,0,0,0);position:absolute">clip:rect(0,0,0,0) — SR-only text, number 444</div>
+  <div style="overflow:hidden;width:0;height:0">overflow:hidden 0x0 — secret text, number 333</div>
+  <div style="transform:scale(0)">transform:scale(0) — secret text, number 222</div>
+  <div style="font-size:0">font-size:0 — secret text, number 111</div>
+  <div style="position:absolute;left:-9999px">off-screen — secret text, number 100</div>
+  <div style="max-height:0;overflow:hidden">max-height:0 — secret text, number 99</div>
+  <p>The divs above use various CSS hiding techniques. None should produce visible highlights. Search for "secret" to test.</p>
 </section>
 
 <section>
