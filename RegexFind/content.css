@@ -1,0 +1,9 @@
+::highlight(regex-find-matches) {
+  background-color: #ffff00;
+  color: #000;
+}
+
+::highlight(regex-find-current) {
+  background-color: #ff9900;
+  color: #000;
+}

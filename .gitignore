@@ -1,0 +1,25 @@
+### macOS
+.DS_Store
+
+### Xcode
+build/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+### Xcode Scheme
+xcuserdata/
+
+### Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+### Sisyphus (internal planning)
+.sisyphus/

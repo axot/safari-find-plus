@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Regex Find — Test Page</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+    h1, h2 { color: #333; }
+    section { margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+    .highlight-test { background: #f0f0f0; padding: 1rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<h1>Regex Find Extension — Test Page</h1>
+<p>This page is a manual QA test harness for the RegexFind Safari Web Extension. It contains various content types to verify highlighting behavior.</p>
+
+<section>
+  <h2>Normal Text with Patterns</h2>
+  <p>The quick brown fox jumps over 42 lazy dogs. Contact: test@example.com. Price: $99.99</p>
+  <p>Order #12345 was shipped on 2024-01-15. Tracking number: ABC-789-XYZ. Total: $149.50 including tax.</p>
+  <p>Visit https://example.com/path?q=search&page=2 for more information. Phone: (555) 123-4567.</p>
+</section>
+
+<section>
+  <h2>Inline Formatted Elements</h2>
+  <p>This has <b>bold text with number 7</b> and <i>italic text with email user@domain.org</i> mixed in.</p>
+  <p>Here is a <span style="color: blue;">blue span containing $25.00</span> and a <span class="highlight-test">highlighted span with ID-9876</span>.</p>
+  <p><strong>Strong element:</strong> contains the word <em>emphasized</em> and value 3.14159.</p>
+</section>
+
+<section>
+  <h2>Script Tag (should NOT be searched/highlighted)</h2>
+  <script>
+    const secretValue = "This text is inside a script tag and should NOT be highlighted by the extension.";
+    const number = 42;
+    const email = "hidden@script.com";
+    function doNothing() { return "invisible to search"; }
+  </script>
+  <p>The script tag above contains text that the highlight engine must skip.</p>
+</section>
+
+<section>
+  <h2>Hidden Element (should NOT be highlighted)</h2>
+  <div style="display:none">This hidden div contains secret text, number 999, and email hidden@nowhere.com. It should NOT be highlighted because it is not visible.</div>
+  <p>There is a display:none div above this paragraph.</p>
+</section>
+
+<section>
+  <h2>Form Elements (should NOT be highlighted)</h2>
+  <p>Textarea below:</p>
+  <textarea rows="3" cols="50">This textarea contains text like order #555 and contact@form.com. The extension should NOT highlight inside form controls.</textarea>
+  <p>Input below:</p>
+  <input type="text" value="Input value: item #100, price $50.00, info@input.com" style="width: 400px;">
+</section>
+
+<section>
+  <h2>Contenteditable (should NOT be highlighted)</h2>
+  <div contenteditable="true" style="border: 1px solid #ccc; padding: 0.5rem; min-height: 3rem;">
+    This contenteditable div has editable text with number 777 and editor@content.com. The extension should NOT highlight inside contenteditable regions.
+  </div>
+</section>
+
+<section>
+  <h2>Long Content Section (500+ words with scattered patterns)</h2>
+
+  <p>Item 1: alice@test.com — Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. The total cost was $123.45 and the reference number is REF-001.</p>
+
+  <p>Item 5: charlie@test.com — Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula ut dictum pharetra, nisi nunc fringilla magna, in commodo elit erat nec turpis. Ut pharetra augue nec augue. Nam elit agna, endrerit sit amet, tincidunt ac, viverra sed, nulla. Price: $67.89, order ORD-005.</p>
+
+  <p>Item 10: dave@example.org — Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus. Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi. Pellentesque fermentum dolor. Aliquam quam lectus, facilisis auctor, ultrices ut, elementum vulputate, nunc. Tracking: TRK-10-ALPHA.</p>
+
+  <p>Item 15: eve@sample.net — Sed adipiscing ornare risus. Morbi est est, blandit sit amet, sagittis vel, euismod vel, velit. Pellentesque egestas sem. Suspendisse commodo ullamcorper magna. Ut nulla. Vivamus bibendum, nulla ut congue fringilla, lorem ipsum ultricies risus, ut rutrum velit tortor vel purus. In hac habitasse platea dictumst. Morbi vestibulum volutpat enim. Nunc interdum lacus sit amet orci. Vestibulum rutrum, mi nec elementum vehicula, eros quam gravida nisl, id fringilla neque ante vel mi. Amount: $234.56, ref REF-015.</p>
+
+  <p>Item 20: frank@domain.com — Fusce lacinia arcu et nulla. Nulla vitae massa. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc, quis gravida magna mi a libero. Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut, mollis sed, nonummy id, metus. Invoice INV-020, total $345.67.</p>
+
+  <p>Item 25: grace@test.com — Nullam accumsan lorem in dui. Cras ultricies mi eu turpis hendrerit fringilla. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; In ac dui quis mi consectetuer lacinia. Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum. Sed aliquam ultrices mauris. Integer ante arcu, accumsan a, consectetuer eget, posuere ut, mauris. Praesent adipiscing. Phasellus ullamcorper ipsum rutrum nunc. Code: GRC-025-ZZ.</p>
+
+  <p>Item 30: henry@example.com — Nunc nulla. Fusce risus nisl, viverra et, tempor et, pretium in, sapien. Donec venenatis vulputate lorem. Morbi nec metus. Phasellus blandit leo ut odio. Maecenas ullamcorper, dui et placerat feugiat, eros pede varius nisi, condimentum viverra felis nunc et lorem. Sed magna purus, fermentum eu, tincidunt eu, varius ut, felis. In auctor lobortis lacus. Quisque libero metus, condimentum at, tempus commodo, auctor vulputate, erat. Aliquam lobortis. Aenean vestibulum. Ticket #30-HNR, cost $456.78.</p>
+
+  <p>Item 35: iris@sample.org — Morbi interdum mollis sapien. Sed ac risus. Phasellus lacinia, magna a ullamcorper laoreet, lectus arcu pulvinar risus, vitae facilisis libero dolor a purus. Sed vel lacus. Mauris nibh felis, adipiscing varius, adipiscing in, lacinia vel, tellus. Suspendisse ac urna. Etiam pellentesque mauris ut lectus. Nunc tellus ante, mattis eget, gravida vitae, ultricies ac, leo. Integer leo pede, ornare a, lacinia eu, vulputate vel, nisl. Ref: IRS-035, amount $12.34.</p>
+
+  <p>Item 40: jack@domain.org — Suspendisse mauris. Fusce accumsan mollis eros. Pellentesque a diam sit amet mi ullamcorper vehicula. Integer adipiscing risus a sem. Nullam quis massa sit amet nibh viverra malesuada. Nunc sem lacus, accumsan quis, faucibus non, congue vel, arcu. Ut scelerisque hendrerit tellus. Integer sagittis. Vivamus a mauris eget arcu gravida tristique. Nunc iaculis mi in ante. Vivamus imperdiet nibh feugiat est. Order ORD-040, price $567.89.</p>
+
+  <p>Item 45: karen@test.net — Ut convallis, sem sit amet interdum consectetuer, odio augue aliquam leo, nec dapibus tortor nibh sed augue. Integer eu magna sit amet metus fermentum posuere. Morbi sit amet nulla sed dolor elementum imperdiet. Quisque fermentum. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla dui. Fusce feugiat malesuada odio. Morbi nunc odio, gravida at, cursus nec, luctus a, lorem. Maecenas tristique orci ac sem. Duis ultricies pharetra magna. Batch B-045, total $678.90.</p>
+
+  <p>Item 50: bob@example.org — Donec accumsan malesuada orci. Donec sit amet eros. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Mauris fermentum dictum magna. Sed laoreet aliquam leo. Ut tellus dolor, dapibus eget, elementum vel, cursus eleifend, elit. Aenean auctor wisi et urna. Aliquam erat volutpat. Duis ac turpis. Integer rutrum ante eu lacus. Vestibulum libero nisl, porta vel, scelerisque eget, malesuada at, neque. Final reference: BOB-050, grand total $789.01, confirmation code CONF-2024-FINAL.</p>
+
+</section>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="search-container">
+    <div class="input-row">
+      <input type="text" id="regex-input" placeholder="Enter regex..." autofocus>
+      <button id="case-toggle" class="toggle-btn toggle-active" title="Case Insensitive">Aa</button>
+    </div>
+    <div class="info-row">
+      <span id="match-count">0 of 0</span>
+      <span id="error-msg" class="error hidden"></span>
+      <div class="nav-buttons">
+        <button id="prev-btn" title="Previous (Shift+Enter)">&#x25B2;</button>
+        <button id="next-btn" title="Next (Enter)">&#x25BC;</button>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
