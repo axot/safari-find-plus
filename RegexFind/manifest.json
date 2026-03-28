@@ -31,8 +31,5 @@
       },
       "description": "Open Regex Find"
     }
-  },
-  "background": {
-    "scripts": ["background.js"]
   }
 }
