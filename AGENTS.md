@@ -42,7 +42,14 @@ xcrun safari-web-extension-converter RegexFind/ \
   --bundle-identifier com.local.regexfind \
   --swift --macos-only --force --no-open --copy-resources
 
-# Build via command line
+# IMPORTANT: Fix bundle ID mismatch after generation (converter capitalizes "RegexFind")
+# In build/RegexFind/RegexFind.xcodeproj/project.pbxproj, ensure the app target uses
+# com.local.regexfind (lowercase), not com.local.RegexFind — the extension target's
+# com.local.regexfind.Extension must be prefixed by the app's bundle ID.
+sed -i '' 's/com\.local\.RegexFind/com.local.regexfind/g' \
+  build/RegexFind/RegexFind.xcodeproj/project.pbxproj
+
+# Build via command line (scheme is "RegexFind", NOT "RegexFind (macOS)")
 xcodebuild -project build/RegexFind/RegexFind.xcodeproj -scheme "RegexFind" build
 
 # Open in Xcode (then Cmd+R to build and run)
@@ -60,17 +67,27 @@ There is no npm, no bundler, no test framework. All QA is manual in Safari.
 2. Safari → Settings → Developer → "Allow unsigned extensions"
 3. Note: "Allow unsigned extensions" resets every Safari restart
 
+### Common Gotchas
+
+- **Bundle ID case mismatch**: The converter generates `com.local.RegexFind` but the extension expects `com.local.regexfind` prefix — always run the `sed` fix above.
+- **Scheme name**: The build scheme is `"RegexFind"`, not `"RegexFind (macOS)"` — the converter doesn't add a platform suffix.
+- **manifest.json warnings**: Safari warns about `persistent` and `type` keys — these are harmless and can be ignored.
+
 ## Testing
 
 No automated test framework. Test manually in Safari:
 
-1. Open `test-page.html` in Safari with extension enabled
+1. Open `test-page.html` in Safari with the extension enabled
 2. Press ⌘⇧F to open popup
-3. Verify: `\d+` highlights all numbers
-4. Verify: `[invalid` shows red error border
-5. Verify: Enter/Shift+Enter navigates between matches
-6. Verify: Escape clears highlights
+3. Verify: `\d+` highlights all numbers (yellow), current match is orange
+4. Verify: `[invalid` shows red error border on input
+5. Verify: Enter/Shift+Enter navigates between matches (wrap-around at ends)
+6. Verify: Escape clears highlights and resets input
 7. Verify: Opening popup on about:blank shows "Cannot search on this page"
+8. Verify: Close popup, reopen — previous search state is restored
+9. Verify: `.*` (empty-match regex) does NOT freeze the page
+
+`test-page.html` includes: normal text, inline elements, `<script>` tags, `display:none` divs, `<textarea>`, `<input>`, `contenteditable` — the engine must skip all non-visible/editable content.
 
 ## Code Style
 
