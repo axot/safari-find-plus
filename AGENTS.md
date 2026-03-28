@@ -35,21 +35,16 @@ Messages between popup and content use `{ action, ...payload }`:
 ## Build & Run Commands
 
 ```bash
-# Generate Xcode project from extension folder
+# Full build (generates Xcode project, fixes bundle IDs, compiles)
+./build.sh
+
+# Or step by step:
 xcrun safari-web-extension-converter RegexFind/ \
   --project-location ./build \
   --app-name "RegexFind" \
   --bundle-identifier com.local.regexfind \
   --swift --macos-only --force --no-open --copy-resources
 
-# IMPORTANT: Fix bundle ID mismatch after generation (converter capitalizes "RegexFind")
-# In build/RegexFind/RegexFind.xcodeproj/project.pbxproj, ensure the app target uses
-# com.local.regexfind (lowercase), not com.local.RegexFind — the extension target's
-# com.local.regexfind.Extension must be prefixed by the app's bundle ID.
-sed -i '' 's/com\.local\.RegexFind/com.local.regexfind/g' \
-  build/RegexFind/RegexFind.xcodeproj/project.pbxproj
-
-# Build via command line (scheme is "RegexFind", NOT "RegexFind (macOS)")
 xcodebuild -project build/RegexFind/RegexFind.xcodeproj -scheme "RegexFind" build
 
 # Open in Xcode (then Cmd+R to build and run)
@@ -66,12 +61,6 @@ There is no npm, no bundler, no test framework. All QA is manual in Safari.
 1. Safari → Settings → Extensions → Enable "Regex Find"
 2. Safari → Settings → Developer → "Allow unsigned extensions"
 3. Note: "Allow unsigned extensions" resets every Safari restart
-
-### Common Gotchas
-
-- **Bundle ID case mismatch**: The converter generates `com.local.RegexFind` but the extension expects `com.local.regexfind` prefix — always run the `sed` fix above.
-- **Scheme name**: The build scheme is `"RegexFind"`, not `"RegexFind (macOS)"` — the converter doesn't add a platform suffix.
-- **manifest.json warnings**: Safari warns about `persistent` and `type` keys — these are harmless and can be ignored.
 
 ## Testing
 
