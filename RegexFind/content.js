@@ -22,7 +22,14 @@ function isNodeExcluded(node) {
   while (el) {
     if (EXCLUDE_TAGS.test(el.tagName)) return true;
     if (el.getAttribute('contenteditable') === 'true') return true;
-    if (getComputedStyle(el).display === 'none') return true;
+    const style = getComputedStyle(el);
+    if (style.display === 'none') return true;
+    if (style.visibility === 'hidden') return true;
+    if (style.opacity === '0') return true;
+    if (style.clipPath === 'circle(0px)' || style.clipPath === 'inset(100%)') return true;
+    if (style.clip === 'rect(0px, 0px, 0px, 0px)') return true;
+    if (style.overflow === 'hidden' &&
+        (parseFloat(style.width) === 0 || parseFloat(style.height) === 0)) return true;
     el = el.parentElement;
   }
   return false;
