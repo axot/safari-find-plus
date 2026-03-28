@@ -1,5 +1,5 @@
 let debounceTimer = null;
-let caseInsensitive = true; // default: case-insensitive ON
+let caseInsensitive = true;
 
 function sendToActiveTab(message) {
   return browser.tabs.query({ active: true, currentWindow: true })
@@ -38,9 +38,15 @@ function updateMatchCount(current, total) {
 }
 
 function showError(message) {
-  const errorEl = document.getElementById('error-msg');
-  errorEl.textContent = message;
-  errorEl.classList.remove('hidden');
+  const el = document.getElementById('error-msg');
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+function hideError() {
+  const el = document.getElementById('error-msg');
+  el.textContent = '';
+  el.classList.add('hidden');
 }
 
 function showCannotSearch() {
@@ -48,16 +54,6 @@ function showCannotSearch() {
   input.disabled = true;
   input.placeholder = 'Cannot search on this page';
   document.getElementById('match-count').textContent = '\u2014';
-}
-
-function buildFlags() {
-  return 'g' + (caseInsensitive ? 'i' : '');
-}
-
-function hideError() {
-  const errorEl = document.getElementById('error-msg');
-  errorEl.textContent = '';
-  errorEl.classList.add('hidden');
 }
 
 function validateAndSearch(value) {
@@ -70,7 +66,7 @@ function validateAndSearch(value) {
     return;
   }
 
-  const flags = buildFlags();
+  const flags = 'g' + (caseInsensitive ? 'i' : '');
   try {
     new RegExp(value, flags);
     input.classList.remove('error');
@@ -85,8 +81,6 @@ function validateAndSearch(value) {
 document.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('regex-input');
   const caseToggle = document.getElementById('case-toggle');
-  const prevBtn = document.getElementById('prev-btn');
-  const nextBtn = document.getElementById('next-btn');
 
   input.focus();
 
@@ -111,23 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   input.addEventListener('input', () => {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      validateAndSearch(input.value);
-    }, 300);
+    debounceTimer = setTimeout(() => validateAndSearch(input.value), 300);
   });
 
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.repeat) {
       e.preventDefault();
-      if (e.shiftKey) {
-        onNavigate('prev');
-      } else {
-        onNavigate('next');
-      }
+      onNavigate(e.shiftKey ? 'prev' : 'next');
     } else if (e.key === 'Escape') {
       input.value = '';
-      hideError();
       input.classList.remove('error');
+      hideError();
       onClear();
     }
   });
@@ -135,13 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
   caseToggle.addEventListener('click', () => {
     caseInsensitive = !caseInsensitive;
     caseToggle.classList.toggle('toggle-active');
-    if (input.value) {
-      validateAndSearch(input.value);
-    }
+    if (input.value) validateAndSearch(input.value);
   });
 
-  nextBtn.addEventListener('click', () => onNavigate('next'));
-  prevBtn.addEventListener('click', () => onNavigate('prev'));
+  document.getElementById('next-btn').addEventListener('click', () => onNavigate('next'));
+  document.getElementById('prev-btn').addEventListener('click', () => onNavigate('prev'));
 });
 
 browser.runtime.onMessage.addListener((message) => {
