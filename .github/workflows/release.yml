@@ -38,16 +38,22 @@ jobs:
             -scheme "RegexFind" \
             -destination "platform=macOS" \
             -derivedDataPath ./DerivedData \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=YES \
             build \
             -quiet
+
+      - name: Ad-hoc sign app and extension
+        run: |
+          APP_PATH=$(find ./DerivedData -name "RegexFind.app" -type d | head -1)
+          echo "Found app at: $APP_PATH"
+          codesign --force --deep --sign - "$APP_PATH"
+          codesign --verify "$APP_PATH" && echo "✅ Ad-hoc signature valid"
 
       - name: Package app
         run: |
           APP_PATH=$(find ./DerivedData -name "RegexFind.app" -type d | head -1)
-          echo "Found app at: $APP_PATH"
           ditto -c -k --keepParent "$APP_PATH" "RegexFind-macOS-${GITHUB_REF_NAME}.zip"
 
       - name: Create Release
@@ -56,10 +62,12 @@ jobs:
           files: RegexFind-macOS-*.zip
           generate_release_notes: true
           body: |
-            > ⚠️ **Unsigned build** — In Safari, go to Settings → Developer → enable **Allow unsigned extensions** (resets each Safari restart).
+            > ⚠️ **Ad-hoc signed build** — requires **Allow unsigned extensions** in Safari → Settings → Developer (resets each Safari restart).
 
             ## Install
             1. Download and unzip `RegexFind-macOS-${{ github.ref_name }}.zip`
-            2. Move **RegexFind.app** to `/Applications`
-            3. Open it once to register the extension
-            4. Safari → Settings → Extensions → enable **Regex Find**
+            2. Remove quarantine: `xattr -cr RegexFind.app`
+            3. Move **RegexFind.app** to `/Applications`
+            4. Open it once to register the extension
+            5. Safari → Settings → Extensions → enable **Regex Find**
+            6. Safari → Settings → Developer → enable **Allow unsigned extensions**
